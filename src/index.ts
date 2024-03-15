@@ -155,33 +155,67 @@ events.on('card:select', (item: ProductItem) => {
 });
 
 // Изменен открытый выбранный товар
+// events.on('preview:changed', (item: ProductItem) => {
+//     const showItem = (item: ProductItem) => {
+
+//         const card = new CatalogItem(cloneTemplate(cardPreviewTemplate), {
+//             onClick: () => {
+//                 appData.addToBasket(item);
+//                 basket.total = appData.getTotal();
+//                 basket.items = appData.basket.map((item, index) => {
+//                     const card = new CatalogItem(cloneTemplate(cardBasketTemplate), {
+//                         onClick: () => {
+//                             //удаление из корзины ?????                                  
+//                             // basket.total = appData.getTotal();
+//                             // basket.selected = appData.basket;
+//                         }
+//                         // events.emit('preview:changed', item)
+//                     });
+//                     return card.render({
+//                         title: item.title,
+//                         price: item.price,
+//                     });
+//                 });
+//                 // изменить статус кнопки на купить
+//                 // по нажатию на кнопку купить переходишь в корзину
+//                 page.counter = appData.basket.length;
+//             }
+//         })
+
+//         modal.render({
+//             content: card.render({
+//                 title: item.title,
+//                 image: item.image,
+//                 category: item.category,
+//                 description: item.description,
+//                 price: item.price,
+//             })
+//         });
+//     };
+
+//     if (item) {
+//         api.getProductItem(item.id)
+//             .then((result) => {
+//                 item.description = result.description;
+//                 showItem(item);
+//             })
+//             .catch((err) => {
+//                 console.error(err);
+//             })
+//     } else {
+//         modal.close();
+//     }
+// });
+// Изменен открытый выбранный товар
 events.on('preview:changed', (item: ProductItem) => {
     const showItem = (item: ProductItem) => {
-
         const card = new CatalogItem(cloneTemplate(cardPreviewTemplate), {
             onClick: () => {
                 appData.addToBasket(item);
-                basket.total = appData.getTotal();
-                basket.items = appData.basket.map(item => {
-                    const card = new CatalogItem(cloneTemplate(cardBasketTemplate), {
-                        onClick: () => {
-                            //удаление из корзины ?????
-                            // basket.total = appData.getTotal();
-                            // basket.selected = appData.basket;
-                        }
-                        // events.emit('preview:changed', item)
-                    });
-                    return card.render({
-                        title: item.title,
-                        price: item.price,
-                    });
-                });
-                // изменить статус кнопки на купить
-                // по нажатию на кнопку купить переходишь в корзину
+                updateBasket();
                 page.counter = appData.basket.length;
             }
-        })
-
+        });
         modal.render({
             content: card.render({
                 title: item.title,
@@ -202,10 +236,36 @@ events.on('preview:changed', (item: ProductItem) => {
             .catch((err) => {
                 console.error(err);
             })
-    } else {
-        modal.close();
     }
+
 });
+
+function updateBasket() {
+    basket.total = appData.getTotal();
+    basket.items = appData.basket.map((item, index) => {
+        const card = new CatalogItem(cloneTemplate(cardBasketTemplate), {
+            onClick: () => {
+                removeFromBasket(item.id);
+            }
+        });
+        return card.render({
+            title: item.title,
+            price: item.price,
+        });
+    });
+}
+
+function removeFromBasket(itemId: string) {
+    const index = appData.basket.findIndex(prod => prod.id === itemId);
+    if (index !== -1) {
+        appData.basket.splice(index, 1);
+        updateBasket();
+        page.counter = appData.basket.length;
+    } else {
+        console.log('Элемент не найден в корзине.');
+    }
+}
+
 
 // Блокируем прокрутку страницы если открыта модалка
 events.on('modal:open', () => {
@@ -223,7 +283,3 @@ api.getProductList()
     .catch(err => {
         console.error(err);
     });
-
-
-
-
