@@ -12,7 +12,7 @@ export interface ICard<T> {
     price: number | null;
     category?: string;
     description?: string;
-    // button?: string;
+    button?: string;
     // status: T;
 }
 
@@ -22,7 +22,7 @@ export class Card<T> extends Component<ICard<T>> {
     protected _price: HTMLElement;
     protected _category?: HTMLElement;
     protected _description?: HTMLElement;
-    // protected _button?: HTMLButtonElement;
+    protected _button?: HTMLButtonElement;
 
     constructor(protected blockName: string, container: HTMLElement, actions?: ICardActions) {
         super(container);
@@ -32,14 +32,18 @@ export class Card<T> extends Component<ICard<T>> {
         this._price = ensureElement<HTMLElement>(`.${blockName}__price`, container);
         this._category = container.querySelector(`.${blockName}__category`);
         this._description = container.querySelector(`.${blockName}__text`);
-        // this._button = container.querySelector(`.${blockName}__button`);
+        this._button = container.querySelector(`.${blockName}__button`);
 
         // if (this._button && actions?.onClick) {
         //     this._button.addEventListener('click', actions.onClick);
         // }
-
         if (actions?.onClick) {
-            container.addEventListener('click', actions.onClick);
+            if (this._button) {
+                this._button.addEventListener('click', actions.onClick);
+
+            } else {
+                container.addEventListener('click', actions.onClick);
+            }
         }
     }
 
@@ -95,16 +99,14 @@ export type BasketButton = {
 export class CatalogItem extends Card<BasketButton> {
     protected _button: HTMLButtonElement;
 
-
     constructor(container: HTMLElement, actions?: ICardActions) {
-        super('card', container, actions);
-        this._button = container.querySelector(`.card__button`);
+        super('card', container, actions);    
+        this._button = container.querySelector('.card__button');
 
         if (this._button && actions?.onClick) {
             this._button.addEventListener('click', actions.onClick);
         }
-        
-    }
+    }   
 }
 
 export class BasketItem extends Card<never> {

@@ -30,6 +30,19 @@ export class Modal extends Component<IModalData> {
         this.events.emit('modal:open');
     }
 
+    orderfirst() {
+        // this.container.classList.add('modal_active');
+        this.events.emit('orderfirst:open');
+        // this.events.emit('order:open');
+    }
+
+    order() {
+        // this.container.classList.add('modal_active');
+        // this.events.emit('orderfirst:open');
+        this.events.emit('order:open');
+    }
+
+
     close() {
         this.container.classList.remove('modal_active');
         this.content = null;

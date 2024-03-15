@@ -24,7 +24,7 @@ export class ProductItem extends Model<IProductItem> {
 }
 
 export class AppState extends Model<IAppState> {
-    basket: string[] = [];
+    basket: ProductItem[] = [];
     gallery: ProductItem[];
     loading: boolean;
     order: IOrderForm = {
@@ -36,22 +36,23 @@ export class AppState extends Model<IAppState> {
     preview: string | null;
     formErrors: FormErrors = {};
     
-    toggleOrderedProduct(id: string, isIncluded: boolean) {
-        if (isIncluded) {
-            this.basket = _.uniq([...this.basket, id]);
-        } else {
-            this.basket = _.without(this.basket, id);
-        }
-    }
+    // toggleOrderedProduct(id: string, isIncluded: boolean) {
+    //     if (isIncluded) {
+    //         this.basket = _.uniq([...this.basket, id]);
+    //     } else {
+    //         this.basket = _.without(this.basket, id);
+    //     }
+    // }
 
-    clearBasket() {
-        this.basket.forEach(id => {
-            this.toggleOrderedProduct(id, false);
-        });
-    }
+    // clearBasket() {
+    //     this.basket.forEach(id => {
+    //         this.toggleOrderedProduct(id, false);
+    //     });
+    // }
 
-    getTotal() {
-        return this.basket.reduce((a, c) => a + this.gallery.find(it => it.id === c).price, 0)
+    getTotal(): string {
+        const total = this.basket.reduce((acc, item) => acc + (item.price || 0), 0);
+        return `${total} синапсов`;
     }
 
     setGallery(items: IProductItem[]) {
@@ -66,23 +67,21 @@ export class AppState extends Model<IAppState> {
 
     getProduct(): IProductItem[] {
         return this.gallery
-            .filter(item => item.status)
-
     }
 
     // removeProduct(item) {
     //     this.item.remove;
     // }
 
-    // Для удобства добавим метод для проверки, находится ли товар в корзине
-    isProductInBasket(productId: string): boolean {
-        return this.basket.includes(productId);
-    }
+    // метод для проверки, находится ли товар в корзине
+    // isProductInBasket(productId: string): boolean {
+    //     return this.basket.includes(productId);
+    // }
 
-    // Для удобства добавим метод для получения объекта товара по его идентификатору
-    getProductById(productId: string): ProductItem | undefined {
-        return this.gallery.find(item => item.id === productId);
-    }
+    // метод для получения объекта товара по его идентификатору
+    // getProductById(productId: string): ProductItem | undefined {
+    //     return this.gallery.find(item => item.id === productId);
+    // }
 
     setOrderField(field: keyof IOrderForm, value: string) {
         if (field === 'payment' && (value === 'online' || value === 'upon-receipt')) {
@@ -90,6 +89,8 @@ export class AppState extends Model<IAppState> {
         } else if (field !== 'payment') {
             this.order[field] = value;
         }
+
+        // this.order[field] = value;
     
         if (this.validateOrder()) {
             this.events.emit('order:ready', this.order);
@@ -109,7 +110,16 @@ export class AppState extends Model<IAppState> {
         return Object.keys(errors).length === 0;
     }
 
-    addToBasket(product: IProductItem) {
-        this.basket.push(product.id, product.title);
+    addToBasket(product: ProductItem) {
+        const existingItem = this.basket.find(item => item.id === product.id);
+        if (existingItem) {
+            // переключить кнопку "купить"
+            this.events.emit('basket:open');
+        } else {
+            this.basket.push(product);
+            const totalPrice = this.getTotal();
+            const eventData = { totalPrice: totalPrice, unit: 'синапсов' }; 
+            this.events.emit('basket:totalChanged', eventData);
+        }
     }
 }
