@@ -1,44 +1,41 @@
 export interface IProductItem {
-  id: string;
-  description?: string;
-  image?: string;
-  title: string;
-  category?: string;
-  price: number | null;
+	id: string;
+	description?: string;
+	image?: string;
+	title: string;
+	category?: string;
+	price: number | null;
 }
 
 export interface IAppState {
-  gallery: IProductItem[];
-  basket: string[];
-  preview: string | null;
-  order: IOrder | null;
+	gallery: IProductItem[];
+	basket: string[];
+	preview: string | null;
+	order: IOrder | null;
 }
 
-// export interface IBasketCounter {
-//   counter: number;
-// }
-
-// export interface IBasket {
-//   data: IProductItem[];
-//   price: number | null;
-// }
-
-export type IBasketItem = Pick<IProductItem, 'id' | 'title' | 'price'>;
+export type PaymentMethods = 'card' | 'cash';
 
 export interface IOrderForm {
-  payment: 'online' | 'upon-receipt';
-  address: string;
-
-  email: string;
-  phone: string;
+	payment: PaymentMethods;
+	address: string;
 }
 
-export interface IOrder extends IOrderForm {
-  items: string[]
+export interface IContactsForm {
+	email: string;
+	phone: string;
+}
+
+export type FieldsInput = Pick<IOrderForm, 'address'> & IContactsForm;
+
+export interface IOrder extends IOrderForm, IContactsForm {
+	items: string[];
+	total: number;
 }
 
 export type FormErrors = Partial<Record<keyof IOrder, string>>;
 
 export interface IOrderResult {
-  price: number | null;
+	id: string;
+	total: number;
 }
